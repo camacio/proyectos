@@ -32,7 +32,7 @@ const datos = {
 botonAñadir.addEventListener("click", function () {
   formulario.classList.toggle("hidden");
   parrafoHorario.classList.add("hidden");
-  añadirHora();
+  añadirHoraInput();
   cambiarIcono(this, "add", "close");
 
   if (!tabla.classList.contains("hidden")) {
@@ -57,24 +57,25 @@ botonAñadir.addEventListener("click", function () {
 
 });
 
+botonHabilitar.addEventListener("click", function () {
+  cambiarIcono(this, "alarm", "alarm_off");
+});
+
+botonConfirmarHorario.addEventListener("click", confirmarHorario);
+
+widget.addEventListener("click", mostrarListaCheckbox);
+
+//terminar
 checkboxes.forEach(function(checkbox){
   checkbox.addEventListener("change", function(){
     const valorCheckbox = Array.from(checkboxes).filter(i => i.checked).map(i => i.value);
-    console.log(valorCheckbox);
+    console.log(i.value);
     inputDia.value = valorCheckbox;
     if(checkbox.value == "Select All"){
       console.log("Select All");
     }
   })
 })
-
-botonHabilitar.addEventListener("click", function () {
-  cambiarIcono(this, "alarm", "alarm_off");
-});
-
-widget.addEventListener("click", mostrarListaCheckbox);
-
-botonConfirmarHorario.addEventListener("click", confirmarHorario);
 
 botonEliminar.addEventListener("click", eliminarHorario);
 
@@ -102,12 +103,14 @@ function confirmarHorario(e) {
 
   cambiarIcono(botonAñadir, "add", "close");
 
-  if (tabla.rows.length === 5) {
+  if (tabla.rows.length === 3) {
     cabeceraHorario.classList.remove("hidden");
   }
 
   botonEliminar.classList.add("hidden");
   botonDeshabilitar.classList.add("hidden");
+
+  
 
 }
 
@@ -155,9 +158,11 @@ function calcularHora() {
 
   const duracion = datos.horaFin - datos.horaInicio;
   datos.duracion = `${new Date(duracion).getMinutes()}min`;
+
+  console.log(datos);
 }
 
-function añadirHora() {
+function añadirHoraInput() {
   let hora = new Date().getHours();
   let minutos = new Date().getMinutes();
 
@@ -171,7 +176,19 @@ function añadirHora() {
 
   const horaCompletaInicio = hora + ":" + minutos;
   inputHoraInicio.value = horaCompletaInicio;
-  const horaCompletaFin = (minutos<10) ? `${hora}:0${parseInt(minutos) + 5}` : `${hora}:${parseInt(minutos) + 5}`;
+/*   const horaCompletaFin = (minutos<10) ? `${hora}:0${parseInt(minutos) + 5}` : `${hora}:${parseInt(minutos) + 5}`; */
+  let horaCompletaFin = "";
+
+  if((minutos + 5)<10){
+    horaCompletaFin = `${hora}:0${parseInt(minutos) + 5}`
+    console.log("minutos 0 -10")
+  }else if(minutos>60){
+    horaCompletaFin = `${hora}:0${parseInt(minutos) + 5 - 60}`
+    console.log("minutos 60 - 65")
+  }else{
+    horaCompletaFin = `${hora}:${parseInt(minutos) + 5}`;
+    console.log("minutos 10- 50")
+  }
   inputHoraFin.value = horaCompletaFin;
 }
 
@@ -227,16 +244,27 @@ function insertarFilaBotones() {
       boton.classList.add("boton-horario-selecionado");
     } 
 
-    boton.addEventListener("click", function (e) {
+    boton.addEventListener("click", function () {
       formulario.classList.remove("hidden");
       tabla.classList.add("hidden");
       botonEliminar.classList.remove("hidden");
       botonDeshabilitar.classList.remove("hidden");
       botonesFormulario.classList.add("reverse");
       cambiarIcono(botonAñadir, "add", "close");
-      
-    });
+      if(!formulario.classList.contains("hidden")){
+        botonConfirmarHorario.removeEventListener("click", confirmarHorario);
+        botonConfirmarHorario.addEventListener("click", function(e){
+          e.preventDefault();
+          console.log("añadir desde formulario");
+          /* tabla.classList.remove("hidden");
+          formulario.classList.add("hidden");
+          calcularHora(); */
 
+        })
+      }
+      botonConfirmarHorario.addEventListener("click", confirmarHorario);
+    });
+    
     filaBoton.classList.add("borde");
   });
 }
@@ -262,7 +290,7 @@ function eliminarHorario(e) {
   formulario.classList.add("hidden");
   cambiarIcono(botonAñadir, "add", "close");
 
-  if (tabla.rows.length === 3) {
+  if (tabla.rows.length === 1) {
     cabeceraHorario.classList.add("hidden");
     parrafoHorario.classList.remove("hidden");
 
