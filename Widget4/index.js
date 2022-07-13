@@ -16,7 +16,7 @@ const widget = document.querySelector(".widget");
 //inputs
 const listaCheckBox = document.querySelector(".lista-checkbox");
 const inputDia = document.querySelector("#input-dia");
-const checkbox = document.querySelector(".checkbox");
+const checkboxes = document.querySelectorAll(".checkbox");
 const inputHoraInicio = document.querySelector("#hora-inicio");
 const inputHoraFin = document.querySelector("#hora-fin");
 
@@ -53,7 +53,20 @@ botonAñadir.addEventListener("click", function () {
   botonDeshabilitar.classList.add("hidden");
   botonesFormulario.classList.remove("reverse");  
 
+  console.log(checkboxes);
+
 });
+
+checkboxes.forEach(function(checkbox){
+  checkbox.addEventListener("change", function(){
+    const valorCheckbox = Array.from(checkboxes).filter(i => i.checked).map(i => i.value);
+    console.log(valorCheckbox);
+    inputDia.value = valorCheckbox;
+    if(checkbox.value == "Select All"){
+      console.log("Select All");
+    }
+  })
+})
 
 botonHabilitar.addEventListener("click", function () {
   cambiarIcono(this, "alarm", "alarm_off");
@@ -64,10 +77,6 @@ widget.addEventListener("click", mostrarListaCheckbox);
 botonConfirmarHorario.addEventListener("click", confirmarHorario);
 
 botonEliminar.addEventListener("click", eliminarHorario);
-
-listaCheckBox.addEventListener("click", function (e) {
-  obtenerCheckbox(e);
-});
 
 botonDeshabilitar.addEventListener("click", function (e) {
   e.preventDefault();
@@ -82,8 +91,6 @@ function confirmarHorario(e) {
 
   tabla.classList.toggle("hidden");
   formulario.classList.add("hidden");
-
-  obtenerCheckbox(e);
 
   calcularHorario();
 
@@ -111,7 +118,7 @@ function calcularDiaActual() {
       "D",
       "L",
       "M",
-      "M",
+      "X",
       "J",
       "V",
       "S",
@@ -164,7 +171,7 @@ function añadirHora() {
 
   const horaCompletaInicio = hora + ":" + minutos;
   inputHoraInicio.value = horaCompletaInicio;
-  const horaCompletaFin = `${hora}:${minutos + 5}`;
+  const horaCompletaFin = (minutos<10) ? `${hora}:0${parseInt(minutos) + 5}` : `${hora}:${parseInt(minutos) + 5}`;
   inputHoraFin.value = horaCompletaFin;
 }
 
@@ -199,32 +206,11 @@ function mostrarListaCheckbox(e) {
   }
 }
 
-let valorCheckbox = [];
-
-function obtenerCheckbox(e) {
-  if (e.target.classList.contains("checkbox")) {
-    console.log("check")
-    valorCheckbox.push(e.target.value);
-
-    const nuevoValor = valorCheckbox.map(reemplazarDuplicados);
-    console.log(nuevoValor);
-    inputDia.value = nuevoValor;
-  }
-
-  if (e.target.value === "Select All") {
-    check();
-    e.target.checked = false;
-  }
-}
-console.log(valorCheckbox);
-
-function reemplazarDuplicados(value, index, self) {
-  return self.indexOf(value) === index ? value : "";
-}
+const dias = ["L", "M", "X", "J", "V", "S", "D"];
+let valorCheckbox = [0, 0, 0, 0, 0, 0, 0];
 
 function insertarFilaBotones() {
   const fecha = new Date();
-  const dias = ["L", "M", "X", "J", "V", "S", "D"];
 
   const filaBoton = tabla.insertRow();
 
@@ -269,6 +255,7 @@ function uncheck() {
 
 function eliminarHorario(e) {
   e.preventDefault();
+
   tabla.deleteRow(-1);
   tabla.deleteRow(-1);
   tabla.classList.remove("hidden");
