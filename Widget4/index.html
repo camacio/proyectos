@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  </head>
+  <body>
+    <div class="widget">
+      <div class="cp1">
+        <h2>CP1</h2>
+        <div class="botones-cp1">
+          <button class="boton-habilitar"><span class="material-symbols-outlined">
+            alarm
+            </span>
+            </button>
+          <button class="boton-añadir"><span class="material-symbols-outlined">
+            add
+            </span></button>
+        </div>
+      </div>
+      <p class="parrafo-horario">
+        Sin horarios planificados, pulse más para añadir uno
+      </p>
+      <div class="contenedor-widget">
+        
+      </div>
+      <table class="tabla hidden">
+        <thead>
+          <tr class="cabecera-horario">
+            <td>#</td>
+            <td>Inicio</td>
+            <td>Fin</td>
+            <td>Duración</td>
+          </tr>
+          <tr class="cabecera-datos"></tr>
+        </thead>
+        <tbody>
+          <tr class="botones-horario"></tr>
+        </tbody>
+      </table>
+      <form class="formulario hidden">
+        <div class="contenedor-hora">
+          <div class="hora-inicio">
+            <label for="hora-inicio">H.Inicio*</label>
+            <input type="time" id="hora-inicio" name="inicio"/>
+          </div>
+          <div class="hora-fin">
+            <label for="hora-fin">H.Fin*</label>
+            <input type="time" id="hora-fin" name="fin"/>
+          </div>
+        </div>
+        <div class="contenedor-input-dia">
+          <label for="input-dia">Inicio</label>
+          <input type="text" id="input-dia" class="input-dia" name="dia"/>
+        </div>
+        <div class="lista-checkbox hidden">
+            <label for="select-all"><input type="checkbox" class="checkbox" value="Select All">Select All</label>
+            <label for="L"><input type="checkbox" class="checkbox" name="checkbox" value="L">L</label>
+            <label for="M"><input type="checkbox" class="checkbox" name="checkbox" value="M">M</label>
+            <label for="X"><input type="checkbox" class="checkbox" name="checkbox" value="X">X</label>
+            <label for="J"><input type="checkbox" class="checkbox" name="checkbox" value="J">J</label>
+            <label for="V"><input type="checkbox" class="checkbox" name="checkbox" value="V">V</label>
+            <label for="S"><input type="checkbox" class="checkbox" name="checkbox" value="S">S</label>
+            <label for="D"><input type="checkbox" class="checkbox" name="checkbox" value="D">D</label>
+        </div>
+        <div class="botones-formulario">
+          <button class="eliminar hidden"><span class="material-symbols-outlined">
+            delete
+            </span></button>
+          <button class="deshabilitar-horario hidden"><span class="material-symbols-outlined">
+            alarm
+            </span></button>
+          <button class="confirmar-horario"><span class="material-symbols-outlined">
+            done
+            </span></i></button>
+        </div>
+      </form>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>
