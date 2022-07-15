@@ -34,9 +34,7 @@ const timer = {
 
 addButton.addEventListener("click", addSchedule);
 
-enableButton.addEventListener("click", function () {
-  changeIcon(this, "alarm", "alarm_off");
-});
+enableButton.addEventListener("click", toggleSchedule);
 
 confirmScheduleButton.addEventListener("click", confirmSchedule);
 
@@ -44,15 +42,13 @@ widget.addEventListener("click", showCheckboxList);
 
 deleteButton.addEventListener("click", deleteSchedule);
 
-disableButton.addEventListener("click", function (e) {
-  e.preventDefault();
-
-  changeIcon(this, "alarm", "alarm_off");
-});
+disableButton.addEventListener("click", toggleSchedule);
 
 checkBoxList.addEventListener("click", setDays);
 
 //funciones
+
+//función botón añadir
 
 function addSchedule(){
   form.classList.toggle("hidden");
@@ -81,6 +77,19 @@ function addSchedule(){
   console.log(checkboxes);
 }
 
+//función botón habilitar horario
+
+function toggleSchedule(e){
+  e.preventDefault();
+
+  changeIcon(this, "alarm", "alarm_off");
+  if(this.childNodes[0].innerHTML == "alarm_off"){
+    console.log("horario deshabilitado");
+  }
+}
+
+//función botón confirmar horario
+
 function confirmSchedule(e) {
   e.preventDefault();
 
@@ -104,12 +113,19 @@ function confirmSchedule(e) {
   deleteButton.classList.add("hidden");
   disableButton.classList.add("hidden");
 
+  if(table.rows.length > 3 ){
+    console.log("modificar horario");
+    
+  }
+
   timers.push(timer);
 
   localStorage.setItem("timers", JSON.stringify(timers));
 
   console.log(timers);
 }
+
+//funciones calculario horario
 
 function calculateCurrentDay() {
   const date = new Date();
@@ -139,6 +155,15 @@ function calculateSchedule() {
 
   timer.endtime = newEndTime.getTime();
 
+  if(timer.starttime > timer.endtime){
+    if(confirm("La franja horaria sobrepasa la medianoche. ¿Desea continuar?")){
+      console.log("confirmado");
+    }else{
+      console.log("rechazado");
+    }
+    
+  }
+
   const duration = timer.endtime - timer.starttime;
   timer.duration = `${new Date(duration).getMinutes()}min`;
 
@@ -162,26 +187,29 @@ function setHourInput() {
 
   let fullEndTime = "";
 
-  if (minutes < 10) {
+  if(minutes >=5){
+    fullEndTime = `${hour}:${parseInt(minutes) + 5}`
+  } else if (minutes < 5) {
     fullEndTime = `${hour}:0${parseInt(minutes) + 5}`;
 
     console.log("minutos 0 -10");
-  } else if (minutes > 60) {
-    fullEndTime = `0${parseInt(hour) + 1}:0${parseInt(minutes) + 5 - 60}`;
+  }else if (minutes > 55) {
+    fullEndTime = `${parseInt(hour) + 1}:0${parseInt(minutes) + 5 - 60}`;
     
     console.log("minutos 60 - 65");
   } else {
     fullEndTime = `${hour}:${parseInt(minutes) + 5}`;
-    console.log("minutos 10- 50");
+    console.log("minutos 10- 60");
   }
 
   endTimeInput.value = fullEndTime;
 
 }
 
+const days = ["L", "M", "X", "J", "V", "S", "D"];
 const valorCheckbox = [];
 
-function setDays(e, buttons){
+function setDays(e){
   if(e.target.classList.contains("checkbox")){
     console.log("check");
 
@@ -191,48 +219,20 @@ function setDays(e, buttons){
 
     checkValue = e.target.value;
 
-    switch(checkValue){
-      case "L":
-        timer.days[0] = 1;
-        buttons[0].id = 1;
-        break;
-      case "M":
-        timer.days[1] = 1;
-        buttons[1].id = 1;
-        break;
-      case "X":
-        timer.days[2] = 1;
-        buttons[2].id = 1;
-        break;
-      case "J":
-        timer.days[3] = 1;
-        buttons[3].id = 1;
-        break;
-      case "V":
-        timer.days[4] = 1;
-        buttons[4].id = 1;
-        break;
-      case "S":
-        timer.days[5] = 1;
-        buttons[5].id = 1;
-        break;
-      case "D":
-        timer.days[6] = 1;
-        buttons[6].id = 1;
-        break;
-      case "Select All":
-        timer.days.fill(1,0,7);
-        buttons.id = 1;
-        break;              
+    const index = days.indexOf(checkValue)
+
+    timer.days[index] = 1;
+
+    if(checkValue === "Select All"){
+      timer.days.fill(1,0,7);
     }
 
-    console.log(valorCheckSet);
     console.log(timer);
 
   }
 }
 
-const days = ["L", "M", "X", "J", "V", "S", "D"];
+//funciones para crear fila de botones
 
 function insertRowButtons() {
   const date = new Date();
@@ -261,28 +261,18 @@ function insertRowButtons() {
       disableButton.classList.remove("hidden");
       formButtons.classList.add("reverse");
       changeIcon(addButton, "add", "close");
-      /* if (!formulario.classList.contains("hidden")) {
-        botonConfirmarHorario.removeEventListener("click", confirmarHorario);
-        botonConfirmarHorario.addEventListener("click", editarHorario);
-      } */
+
+/* 
+      if (!form.classList.contains("hidden")) {
+        confirmScheduleButton.removeEventListener("click", confirmSchedule);
+        confirmScheduleButton.addEventListener("click", editSchedule);
+      } 
+       */
 
     });
 
     rowButtons.classList.add("borde");
   });
-}
-
-function editSchedule(e) {
-  e.preventDefault();
-  console.log("añadir desde formulario");
-  table.classList.remove("hidden");
-  form.classList.add("hidden");
-  table.deleteRow(-1);
-  table.deleteRow(-1);
-  insertDataRow();
-  insertRowButtons();
-
-  changeIcon(addButton, "add", "close");
 }
 
 function insertDataRow() {
@@ -304,7 +294,7 @@ function insertDataRow() {
   }
 }
 
-let checkboxValue = [0, 0, 0, 0, 0, 0, 0];
+//funciones lista checkbox
 
 function showCheckboxList(e) {
   if (inputDay.contains(e.target)) {
@@ -332,6 +322,23 @@ function uncheck() {
     .forEach((checkbox) => (checkbox.checked = false));
 }
 
+//funcion para modificar horario
+
+function editSchedule(e) {
+  e.preventDefault();
+  console.log("añadir desde formulario");
+  table.classList.remove("hidden");
+  form.classList.add("hidden");
+  table.deleteRow(-1);
+  table.deleteRow(-1);
+  insertDataRow();
+  insertRowButtons();
+
+  changeIcon(addButton, "add", "close");
+}
+
+//función botón eliminar horario
+
 function deleteSchedule(e) {
   e.preventDefault();
 
@@ -350,6 +357,8 @@ function deleteSchedule(e) {
 
   timer.id = timer.id - 1;
 }
+
+//función para cambiar icono
 
 function changeIcon(button, iconOne, iconTwo) {
   const span = button.childNodes[0];
