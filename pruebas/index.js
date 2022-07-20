@@ -1,7 +1,8 @@
-const partesDelCoche = ["ruedas", "puerta", "volante", "yantas", "ruedas", "asiento", "motor"];
+class Carrito{
+    items = [];
 
-const coche = partesDelCoche.reduce(function(anterior, actual){
-    return `${anterior} ${actual}`
-}, "Mi coche tiene: "); 
+    addItem(product){
+        this.items.push(product);
+    }
 
-console.log(coche);
+}

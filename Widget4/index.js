@@ -20,6 +20,8 @@ const checkboxes = document.querySelectorAll(".checkbox");
 const startTimeInput = document.querySelector("#hora-inicio");
 const endTimeInput = document.querySelector("#hora-fin");
 
+const date = new Date();
+
 const timers = [];
 
 const timer = {
@@ -27,10 +29,11 @@ const timer = {
   starttime: "",
   endtime: "",
   duration: 0,
-  days: [0,0,0,0,0,0,0]
+  days: [0, 0, 0, 0, 0, 0, 0],
 };
 
 //listeners
+
 
 addButton.addEventListener("click", addSchedule);
 
@@ -50,7 +53,7 @@ checkBoxList.addEventListener("click", setDays);
 
 //función botón añadir
 
-function addSchedule(){
+function addSchedule() {
   form.classList.toggle("hidden");
   scheduleParagraph.classList.add("hidden");
   setHourInput();
@@ -64,7 +67,6 @@ function addSchedule(){
     table.classList.remove("hidden");
   }
 
-  checkboxValue = [];
   inputDay.value = "";
   enableButton.classList.toggle("hidden");
 
@@ -79,11 +81,11 @@ function addSchedule(){
 
 //función botón habilitar horario
 
-function toggleSchedule(e){
+function toggleSchedule(e) {
   e.preventDefault();
 
   changeIcon(this, "alarm", "alarm_off");
-  if(this.childNodes[0].innerHTML == "alarm_off"){
+  if (this.childNodes[0].innerHTML == "alarm_off") {
     console.log("horario deshabilitado");
   }
 }
@@ -93,14 +95,12 @@ function toggleSchedule(e){
 function confirmSchedule(e) {
   e.preventDefault();
 
+  timer.id = timer.id + 1;
+
   table.classList.toggle("hidden");
   form.classList.add("hidden");
 
   calculateSchedule();
-
-  insertDataRow();
-
-  insertRowButtons();
 
   enableButton.classList.toggle("hidden");
 
@@ -113,22 +113,45 @@ function confirmSchedule(e) {
   deleteButton.classList.add("hidden");
   disableButton.classList.add("hidden");
 
-  if(table.rows.length > 3 ){
+  if (table.rows.length > 3) {
     console.log("modificar horario");
-    
   }
 
-  timers.push(timer);
+  const timerCodificado = JSON.stringify(timer);
+  const timerDescodificado = JSON.parse(timerCodificado);
+  timers.push(timerDescodificado);
 
   localStorage.setItem("timers", JSON.stringify(timers));
 
   console.log(timers);
+
+  reset();
+
+}
+
+function reset(){
+  const header = ["#","Inicio","Fin","Duración"];
+
+  table.innerHTML = "";
+
+  const row = table.insertRow();
+  row.classList.add("cabecera-horario");
+
+  header.forEach(function(item){
+    const cell = row.insertCell();
+    cell.textContent = item;
+    row.appendChild(cell);
+  })
+  
+  for(let i = 0; i < timers.length; i++){
+    insertDataRow(i);
+    insertRowButtons(i);
+  }
 }
 
 //funciones calculario horario
 
 function calculateCurrentDay() {
-  const date = new Date();
 
   const days = ["D", "L", "M", "X", "J", "V", "S"];
 
@@ -136,9 +159,7 @@ function calculateCurrentDay() {
 }
 
 function calculateSchedule() {
-  timer.id = timer.id + 1;
 
-  const date = new Date();
   const startTime = startTimeInput.value;
 
   const newStartTime = new Date(
@@ -155,24 +176,44 @@ function calculateSchedule() {
 
   timer.endtime = newEndTime.getTime();
 
-  if(timer.starttime > timer.endtime){
-    if(confirm("La franja horaria sobrepasa la medianoche. ¿Desea continuar?")){
-      console.log("confirmado");
-    }else{
-      console.log("rechazado");
-    }
-    
-  }
+  setHourInterval(timer);
 
   const duration = timer.endtime - timer.starttime;
-  timer.duration = `${new Date(duration).getMinutes()}min`;
+
+  const newDate = new Date(duration);
+
+  const minutes = newDate.getMinutes();
+  const hours = newDate.getHours() - 1;
+
+  timer.duration = `${newDate.getMinutes()}min`;
+
+  if (hours > 0) {
+    timer.duration = `${hours}h ${minutes}m`;
+    console.log("mas de 24 h");
+  }
+
+  if(hours == -1){
+    timer.duration = `23h ${minutes}m`;
+  }
 
   console.log(timer);
 }
 
+function setHourInterval(timer){
+  if (timer.starttime > timer.endtime) {
+    if (
+      confirm("La franja horaria sobrepasa la medianoche. ¿Desea continuar?")
+    ) {
+      console.log("confirmado");
+    } else {
+      console.log("rechazado");
+    }
+  }
+}
+
 function setHourInput() {
-  let hour = new Date().getHours();
-  let minutes = new Date().getMinutes();
+  let hour = date.getHours();
+  let minutes = date.getMinutes();
 
   if (hour < 10) {
     hour = `0${hour}`;
@@ -187,55 +228,51 @@ function setHourInput() {
 
   let fullEndTime = "";
 
-  if(minutes >=5){
-    fullEndTime = `${hour}:${parseInt(minutes) + 5}`
+  if (minutes > 5 && minutes < 10) {
+    fullEndTime = `${hour}:${parseInt(minutes) + 5}`;
+
+    console.log("minutos > 5")
   } else if (minutes < 5) {
     fullEndTime = `${hour}:0${parseInt(minutes) + 5}`;
 
-    console.log("minutos 0 -10");
-  }else if (minutes > 55) {
-    fullEndTime = `${parseInt(hour) + 1}:0${parseInt(minutes) + 5 - 60}`;
-    
-    console.log("minutos 60 - 65");
+    console.log("minutos < 5")
+
   } else {
     fullEndTime = `${hour}:${parseInt(minutes) + 5}`;
     console.log("minutos 10- 60");
   }
 
   endTimeInput.value = fullEndTime;
-
 }
 
 const days = ["L", "M", "X", "J", "V", "S", "D"];
 const valorCheckbox = [];
 
-function setDays(e){
-  if(e.target.classList.contains("checkbox")){
+function setDays(e) {
+  if (e.target.classList.contains("checkbox")) {
     console.log("check");
 
     valorCheckbox.push(e.target.value);
-    valorCheckSet = [...new Set(valorCheckbox)];
+    const valorCheckSet = [...new Set(valorCheckbox)];
     inputDay.value = valorCheckSet;
 
-    checkValue = e.target.value;
+    const checkValue = e.target.value;
 
-    const index = days.indexOf(checkValue)
+    const index = days.indexOf(checkValue);
 
     timer.days[index] = 1;
 
-    if(checkValue === "Select All"){
-      timer.days.fill(1,0,7);
+    if (checkValue === "Select All") {
+      timer.days.fill(1, 0, 7);
     }
 
     console.log(timer);
-
   }
 }
 
 //funciones para crear fila de botones
 
-function insertRowButtons() {
-  const date = new Date();
+function insertRowButtons(i) {
 
   const rowButtons = table.insertRow();
 
@@ -245,9 +282,8 @@ function insertRowButtons() {
     const cell = rowButtons.insertCell();
     const button = document.createElement("button");
     button.classList.add("boton-horario");
-    button.textContent = item; 
-    button.id = 0;
-    console.log(button.id);
+    button.textContent = item;
+
     cell.appendChild(button);
 
     if (button.textContent == days[date.getDay() - 1]) {
@@ -262,36 +298,36 @@ function insertRowButtons() {
       formButtons.classList.add("reverse");
       changeIcon(addButton, "add", "close");
 
-/* 
-      if (!form.classList.contains("hidden")) {
-        confirmScheduleButton.removeEventListener("click", confirmSchedule);
-        confirmScheduleButton.addEventListener("click", editSchedule);
-      } 
-       */
-
     });
 
     rowButtons.classList.add("borde");
   });
 }
 
-function insertDataRow() {
+function insertDataRow(i) {
   const row = table.insertRow();
   row.classList.add("cabecera-datos");
 
-  const {days, ...timerRow} = timer;
+  const { days, ...timerRow } = timers[i];
 
   for (const data in timerRow) {
     const cell = row.insertCell();
-    
-    if (timerRow[data] == timer.starttime) {
-      cell.textContent = startTimeInput.value;
-    } else if (timerRow[data] == timer.endtime) {
-      cell.textContent = endTimeInput.value;
+
+    if (timerRow[data] == timers[i].starttime) {
+      setTime(timers[i].starttime, cell);
+    } else if (timerRow[data] == timers[i].endtime) {
+      setTime(timers[i].endtime, cell);
     } else {
       cell.textContent = timerRow[data];
     }
   }
+}
+
+function setTime(timer, cell){
+  const date = new Date(timer);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  cell.textContent = `${hours}:${minutes}`;
 }
 
 //funciones lista checkbox
@@ -331,8 +367,7 @@ function editSchedule(e) {
   form.classList.add("hidden");
   table.deleteRow(-1);
   table.deleteRow(-1);
-  insertDataRow();
-  insertRowButtons();
+
 
   changeIcon(addButton, "add", "close");
 }
@@ -349,12 +384,11 @@ function deleteSchedule(e) {
   changeIcon(addButton, "add", "close");
 
   if (table.rows.length === 1) {
-    scheduleHeader.classList.add("hidden");
+    table.innerHTML = "";
     scheduleParagraph.classList.remove("hidden");
-
-    console.log(table.rows.length);
   }
 
+  timers.pop();
   timer.id = timer.id - 1;
 }
 
