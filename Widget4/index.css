@@ -170,7 +170,7 @@ button:hover{
 .boton-horario{
     border-radius: 2rem;
 }
-.boton-horario-selecionado{
+.boton-horario-desmarcado{
     background-color: rgb(151, 212, 253);
 }
 label{

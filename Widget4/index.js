@@ -20,7 +20,9 @@ const checkboxes = document.querySelectorAll(".checkbox");
 const startTimeInput = document.querySelector("#hora-inicio");
 const endTimeInput = document.querySelector("#hora-fin");
 
-const date = new Date();
+const CURRENT_DATE = new Date();
+const DAYS_OF_THE_WEEK = ["L", "M", "X", "J", "V", "S", "D"];
+const CURRENT_DAY = DAYS_OF_THE_WEEK[CURRENT_DATE.getDay() - 1];
 
 const timers = [];
 
@@ -29,7 +31,7 @@ const timer = {
   starttime: "",
   endtime: "",
   duration: 0,
-  days: [0, 0, 0, 0, 0, 0, 0],
+  days: [false, false, false, false, false, false, false],
 };
 
 //listeners
@@ -59,24 +61,20 @@ function addSchedule() {
   setHourInput();
   changeIcon(this, "add", "close");
 
-  if (!table.classList.contains("hidden")) {
-    table.classList.add("hidden");
-  }
-
-  if (form.classList.contains("hidden")) {
+  if(this.value == "disable"){
     table.classList.remove("hidden");
+    this.value = "enable";
+  }else if(this.value == "enable"){
+    table.classList.add("hidden");
+    this.value = "disable";
   }
 
-  inputDay.value = "";
   enableButton.classList.toggle("hidden");
 
-  inputDay.value = calculateCurrentDay();
+  inputDay.value = CURRENT_DAY;
 
-  deleteButton.classList.add("hidden");
-  disableButton.classList.add("hidden");
   formButtons.classList.remove("reverse");
 
-  console.log(checkboxes);
 }
 
 //función botón habilitar horario
@@ -97,25 +95,19 @@ function confirmSchedule(e) {
 
   timer.id = timer.id + 1;
 
-  table.classList.toggle("hidden");
-  form.classList.add("hidden");
-
   calculateSchedule();
 
   enableButton.classList.toggle("hidden");
 
   changeIcon(addButton, "add", "close");
 
-  if (table.rows.length === 3) {
-    scheduleHeader.classList.remove("hidden");
+  if(this.value == "disable"){
+    this.value = "enable";
+  } else if(this.value == "enable"){
+    this.value = "disable";
   }
 
-  deleteButton.classList.add("hidden");
-  disableButton.classList.add("hidden");
-
-  if (table.rows.length > 3) {
-    console.log("modificar horario");
-  }
+  console.log(this.value);
 
   const timerCodificado = JSON.stringify(timer);
   const timerDescodificado = JSON.parse(timerCodificado);
@@ -125,6 +117,8 @@ function confirmSchedule(e) {
 
   console.log(timers);
 
+  addButton.value = "enable"
+
   reset();
 
 }
@@ -133,6 +127,8 @@ function reset(){
   const header = ["#","Inicio","Fin","Duración"];
 
   table.innerHTML = "";
+  table.classList.toggle("hidden");
+  form.classList.toggle("hidden");
 
   const row = table.insertRow();
   row.classList.add("cabecera-horario");
@@ -147,23 +143,18 @@ function reset(){
     insertDataRow(i);
     insertRowButtons(i);
   }
+
+  
 }
 
 //funciones calculario horario
-
-function calculateCurrentDay() {
-
-  const days = ["D", "L", "M", "X", "J", "V", "S"];
-
-  return days[date.getDay()];
-}
 
 function calculateSchedule() {
 
   const startTime = startTimeInput.value;
 
   const newStartTime = new Date(
-    date.toString().split(":")[0].slice(0, -2) + startTime
+    CURRENT_DATE.toString().split(":")[0].slice(0, -2) + startTime
   );
 
   timer.starttime = newStartTime.getTime();
@@ -171,7 +162,7 @@ function calculateSchedule() {
   const endTime = endTimeInput.value;
 
   const newEndTime = new Date(
-    date.toString().split(":")[0].slice(0, -2) + endTime
+    CURRENT_DATE.toString().split(":")[0].slice(0, -2) + endTime
   );
 
   timer.endtime = newEndTime.getTime();
@@ -212,8 +203,8 @@ function setHourInterval(timer){
 }
 
 function setHourInput() {
-  let hour = date.getHours();
-  let minutes = date.getMinutes();
+  let hour = CURRENT_DATE.getHours();
+  let minutes = CURRENT_DATE.getMinutes();
 
   if (hour < 10) {
     hour = `0${hour}`;
@@ -237,6 +228,8 @@ function setHourInput() {
 
     console.log("minutos < 5")
 
+  } else if (minutes + 5 >= 60){
+    fullEndTime = `${parseInt(hour) + 1}:0${parseInt(minutes) + 5 -60}`
   } else {
     fullEndTime = `${hour}:${parseInt(minutes) + 5}`;
     console.log("minutos 10- 60");
@@ -245,12 +238,10 @@ function setHourInput() {
   endTimeInput.value = fullEndTime;
 }
 
-const days = ["L", "M", "X", "J", "V", "S", "D"];
 const valorCheckbox = [];
 
 function setDays(e) {
   if (e.target.classList.contains("checkbox")) {
-    console.log("check");
 
     valorCheckbox.push(e.target.value);
     const valorCheckSet = [...new Set(valorCheckbox)];
@@ -258,12 +249,12 @@ function setDays(e) {
 
     const checkValue = e.target.value;
 
-    const index = days.indexOf(checkValue);
+    const index = DAYS_OF_THE_WEEK.indexOf(checkValue);
 
-    timer.days[index] = 1;
+    timer.days[index] = true;
 
     if (checkValue === "Select All") {
-      timer.days.fill(1, 0, 7);
+      timer.days.fill(true, 0, 7);
     }
 
     console.log(timer);
@@ -276,7 +267,10 @@ function insertRowButtons(i) {
 
   const rowButtons = table.insertRow();
 
-  days.forEach((item) => {
+  const {days} = timers[i];
+
+
+  for(const [i, item] of DAYS_OF_THE_WEEK.entries()){
     rowButtons.classList.add("botones-horario");
 
     const cell = rowButtons.insertCell();
@@ -286,22 +280,31 @@ function insertRowButtons(i) {
 
     cell.appendChild(button);
 
-    if (button.textContent == days[date.getDay() - 1]) {
-      button.classList.add("boton-horario-selecionado");
+    if (days[i] == false) {
+      button.classList.add("boton-horario-desmarcado");
+    }
+
+    if(item == CURRENT_DAY){
+      days[i] = true;
+      button.classList.remove("boton-horario-desmarcado");
     }
 
     button.addEventListener("click", function () {
       form.classList.remove("hidden");
       table.classList.add("hidden");
+      enableButton.classList.toggle("hidden");
       deleteButton.classList.remove("hidden");
       disableButton.classList.remove("hidden");
       formButtons.classList.add("reverse");
       changeIcon(addButton, "add", "close");
-
+      
     });
 
     rowButtons.classList.add("borde");
-  });
+
+  }
+
+  console.log(timers[i].days);
 }
 
 function insertDataRow(i) {
@@ -390,6 +393,8 @@ function deleteSchedule(e) {
 
   timers.pop();
   timer.id = timer.id - 1;
+
+  enableButton.classList.toggle("hidden");
 }
 
 //función para cambiar icono
