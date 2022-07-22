@@ -20,6 +20,7 @@ const checkboxes = document.querySelectorAll(".checkbox");
 const startTimeInput = document.querySelector("#hora-inicio");
 const endTimeInput = document.querySelector("#hora-fin");
 
+let CONDITIONAL_SCHEDULE = true;
 const CURRENT_DATE = new Date();
 const DAYS_OF_THE_WEEK = ["L", "M", "X", "J", "V", "S", "D"];
 const CURRENT_DAY = DAYS_OF_THE_WEEK[CURRENT_DATE.getDay() - 1];
@@ -41,7 +42,7 @@ addButton.addEventListener("click", addSchedule);
 
 enableButton.addEventListener("click", toggleSchedule);
 
-confirmScheduleButton.addEventListener("click", confirmSchedule);
+confirmScheduleButton.addEventListener("click", conditionalSchedule);
 
 widget.addEventListener("click", showCheckboxList);
 
@@ -60,14 +61,6 @@ function addSchedule() {
   scheduleParagraph.classList.add("hidden");
   setHourInput();
   changeIcon(this, "add", "close");
-
-  if(this.value == "disable"){
-    table.classList.remove("hidden");
-    this.value = "enable";
-  }else if(this.value == "enable"){
-    table.classList.add("hidden");
-    this.value = "disable";
-  }
 
   enableButton.classList.toggle("hidden");
 
@@ -90,8 +83,7 @@ function toggleSchedule(e) {
 
 //función botón confirmar horario
 
-function confirmSchedule(e) {
-  e.preventDefault();
+function confirmSchedule() {
 
   timer.id = timer.id + 1;
 
@@ -101,25 +93,31 @@ function confirmSchedule(e) {
 
   changeIcon(addButton, "add", "close");
 
-  if(this.value == "disable"){
-    this.value = "enable";
-  } else if(this.value == "enable"){
-    this.value = "disable";
-  }
-
-  console.log(this.value);
-
   const timerCodificado = JSON.stringify(timer);
   const timerDescodificado = JSON.parse(timerCodificado);
   timers.push(timerDescodificado);
 
   localStorage.setItem("timers", JSON.stringify(timers));
 
-  console.log(timers);
-
   addButton.value = "enable"
 
+  console.log("confirmar horario");
+
   reset();
+
+}
+
+function conditionalSchedule(e){
+  e.preventDefault();
+
+  (CONDITIONAL_SCHEDULE) ? confirmSchedule() : editSchedule();
+
+}
+
+function editSchedule(){
+  form.classList.add("hidden");
+  table.classList.remove("hidden");
+  console.log("editar horario");
 
 }
 
@@ -143,8 +141,6 @@ function reset(){
     insertDataRow(i);
     insertRowButtons(i);
   }
-
-  
 }
 
 //funciones calculario horario
@@ -186,8 +182,6 @@ function calculateSchedule() {
   if(hours == -1){
     timer.duration = `23h ${minutes}m`;
   }
-
-  console.log(timer);
 }
 
 function setHourInterval(timer){
@@ -297,14 +291,14 @@ function insertRowButtons(i) {
       disableButton.classList.remove("hidden");
       formButtons.classList.add("reverse");
       changeIcon(addButton, "add", "close");
+
+      CONDITIONAL_SCHEDULE = false
       
     });
 
     rowButtons.classList.add("borde");
 
   }
-
-  console.log(timers[i].days);
 }
 
 function insertDataRow(i) {
@@ -363,7 +357,7 @@ function uncheck() {
 
 //funcion para modificar horario
 
-function editSchedule(e) {
+/* function editSchedule(e) {
   e.preventDefault();
   console.log("añadir desde formulario");
   table.classList.remove("hidden");
@@ -373,7 +367,7 @@ function editSchedule(e) {
 
 
   changeIcon(addButton, "add", "close");
-}
+} */
 
 //función botón eliminar horario
 
