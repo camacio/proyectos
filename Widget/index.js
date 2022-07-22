@@ -62,6 +62,14 @@ function addSchedule() {
   setHourInput();
   changeIcon(this, "add", "close");
 
+  if(this.value == "disable"){
+    table.classList.remove("hidden");
+    this.value = "enable";
+  }else if(this.value == "enable"){
+    table.classList.add("hidden");
+    this.value = "disable";
+  }
+
   enableButton.classList.toggle("hidden");
 
   inputDay.value = CURRENT_DAY;
